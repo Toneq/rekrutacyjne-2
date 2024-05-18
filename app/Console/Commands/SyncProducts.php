@@ -3,28 +3,22 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Jobs\SyncProductsJob;
 
 class SyncProducts extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:sync-products';
+    protected $signature = 'sync:products {csvFilePath}';
+    protected $description = 'Synchronize products from BaseLinker to AtomStore with overridden prices from CSV';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        //
+        $csvFilePath = $this->argument('csvFilePath');
+        SyncProductsJob::dispatch($csvFilePath);
+        $this->info('Sync job dispatched!');
     }
 }
