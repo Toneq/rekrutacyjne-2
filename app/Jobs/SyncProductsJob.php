@@ -32,7 +32,32 @@ class SyncProductsJob implements ShouldQueue
         $overriddenPrices = $this->readCsv($this->csvFilePath);
 
         foreach ($productsBaseLinker as $product) {
+            $productCode = $product['ean'];
+            if (isset($overriddenPrices[$productCode])) {
+                $product['price_brutto'] = $overriddenPrices[$productCode];
+            }
 
+            $stock = 0;
+            foreach ($product["data"]['stock'] as $key => $value) {
+                $stock += $value;
+            }
+
+            $payload = [
+                'code' => $product['ean'],
+                'name' => $product['name'],
+                'vat_rate' => $product["data"]['tax_rate'],
+                'price' => $product['price_brutto'],
+                'stock' => $stock,
+                'attributes' => [
+                    'weight' => $product["data"]['weight'],
+                    'height' => $product["data"]['height'],
+                    'width' => $product["data"]['width'],
+                    'length' => $product["data"]['length'],
+                    'star' => $product["data"]['star'],
+                ],
+            ];
+
+            $this->atomStoreService->setProduct($payload);
         }
     }
 
